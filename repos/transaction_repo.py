@@ -1,9 +1,8 @@
 import sys
 sys.path.append("data/")
-from db_util import query, query_select
+from data.db_util import query, query_select
 
 def save_transaction(customer_name, total_amount):
-    # sql = "INSERT INTO transactions (customer_name, total_amount) VALUES (%s, %s)"
     query(f"INSERT INTO transactions (customer_name, total_amount) VALUES ('{customer_name}', {total_amount})")
 
 def get_transaction(customer_name):

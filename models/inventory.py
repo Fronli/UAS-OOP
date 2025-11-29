@@ -1,27 +1,22 @@
 import sys
 sys.path.append('repos/')
-from inventory_repo import repo_getStock, repo_addStock, repo_reduceStock
+sys.path.append('util/')
+from repos.inventory_repo import repo_getStock, repo_reduceStock
+from util.exception_h import InsufficientStockErrorH
 
 class Inventory:
     def checkStock(self, id, qty):
         db_list = repo_getStock(id)
-        db_list = db_list[0]
-        if db_list[6] - qty >= 0:
-            return True
-        else: 
+        if not db_list:
             return False
+        current_qty = db_list[0][6] 
+        return current_qty >= qty
         
-    def addStock(self, id, qty):
-        repo_addStock(id, qty)
-
     def reduceStock(self, id, qty):
-        check_flag = self.checkStock(id, qty)
-        if check_flag:
+        if self.checkStock(id, qty):
             repo_reduceStock(id, qty)        
         else:
-            print("Insufficient stock!")
+            raise InsufficientStockErrorH(f"Stok untuk produk ID {id} tidak cukp!")
 
 
 global_inventory = Inventory()
-
-# print(inv.checkStock(1, 16))

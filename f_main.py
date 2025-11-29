@@ -1,57 +1,74 @@
 import sys
 sys.path.append("models/")
 sys.path.append("repos/")
-from product import Product
-from product_repo import getAllProduct
-from transaction import Transaction, getUserTransaction
+sys.path.append("util/")
 
-#Input checker agar input tidak kosong!
+from models.electronic_product import ElectronicProduct
+from models.transaction import Transaction, getUserTransaction
+from repos.product_repo import getAllProduct, getProductInfo
+from util.exception_h import InsufficientStockErrorH
+
 def checkInput(prompt):
     data_input = input(prompt)
-    if not data_input:
-        while not data_input:
-            print("Input tidak boleh kosong. Silakan coba lagi.")
-            data_input = input(prompt)
+    while not data_input:
+        print("Input tidak boleh kosong.")
+        data_input = input(prompt)
     return data_input
-
 
 def first_opt():
     print("Mohon masukkan nama user!")
-    username = checkInput("Masukkan nama:")
+    username = checkInput("Masukkan nama: ")
 
-    product_list = []
+    # Init Transaksi disini!
+    current_transaction = Transaction(username)
 
     while True:
-        print("Silahkan pilih barang!")
-        all_product_list = getAllProduct()
-        index = 1
-        # print(product_list)
-        for product in all_product_list:
-            print(f"{index}. {product[1]}\nCategory: {product[2]}\nPrice: Rp.{product[4]}\nQuantity: {product[6]}\n")
-            index += 1
-            
-        print("Pilih produk yang mana?")
-        inp_product = int(checkInput("Masukkan pilihan: "))
-        inp_total = int(checkInput("Berapa banyak: "))
+        print("\n--- DAFTAR PRODUK ---")
+        all_product_data = getAllProduct() 
+        index = 1        
 
-        product_dict = {
-            "product": inp_product,
-            "qty": inp_total 
-        }
-        product_list.append(product_dict)
-        
-        print("Apakah ingin membeli produk lain lagi?")
-        inp_buy_again = checkInput("Masukkan jawaban (yes / no): ")
-        if inp_buy_again == "no":
+        for p in all_product_data:
+            print(f"{index}. {p[1]}\nCategory: {p[2]}\nPrice: Rp.{p[4]}\nQuantity: {p[6]}\n")
+            index += 1
+
+            
+        try:
+            inp_id = int(checkInput("Pilih produk: "))
+            inp_qty = int(checkInput("Berapa banyak: "))
+
+            prod_info = getProductInfo(inp_id)
+            # print(f"dari print prod_info: {prod_info}")
+
+            if prod_info:
+                product_obj = ElectronicProduct(
+                    id=prod_info[0],
+                    name=prod_info[1],
+                    category=prod_info[2],
+                    brand=prod_info[3],
+                    price=prod_info[4],
+                    warranty_months=prod_info[5] # Default atau ambil dari DB jika ada
+                )
+
+                # Masukkan Object ke Transaksi
+                current_transaction.add_item(product_obj, inp_qty)
+                print("Berhasil ditambahkan ke keranjang.")
+            else:
+                print("ID Produk tidak ditemukan.")
+
+        except ValueError:
+            print("Input harus berupa angka.")
+
+        inp_buy_again = checkInput("Beli lagi? (yes/no): ")
+        if inp_buy_again.lower() == "no":
             break
     
-    transaction = Transaction(
-        product_list,
-        username
-    )
-    transaction.final_transaction()
-    print(f"Total pembelian anda adalah Rp{transaction.total_price}\n")
-
+    try:
+        current_transaction.final_transaction()
+        print(f"\nTransaksi Berhasil! Total: Rp{current_transaction.total_price}")
+    except InsufficientStockErrorH as e:
+        print(f"\nGAGAL: {e}")
+    except Exception as e:
+        print(f"\nTerjadi kesalahan sistem: {e}")
 
 def second_opt():
     print("Mohon masukkan nama user!")
@@ -60,6 +77,8 @@ def second_opt():
     db_list = getUserTransaction(username)
     for transaction in db_list:
         print(f"\nTransaction ID: {transaction[0]}\nTransaction Date: {transaction[1]}\nTotal Amount: {transaction[3]}\n")
+
+    pass
 
 def third_opt():
     print("Terima kasih telah berbelanja!")

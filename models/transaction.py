@@ -1,27 +1,28 @@
 import sys
-from inventory import global_inventory
-
 sys.path.append("../repos")
-from product_repo import getProductPrice
-from transaction_repo import save_transaction, get_transaction
+from inventory import global_inventory
+# from repos.product_repo import getProductPrice
+from repos.transaction_repo import save_transaction, get_transaction
+from transaction_item import TransactionItem
 
 class Transaction:
-    def __init__(self, product_list, username):
-        self.product_list = product_list
-        self.total_price = 0
+    def __init__(self, username):
         self.username = username
+        self.items = []
+        self.total_price = 0
     
-    def add_item(self):
-        for item in self.product_list:
-            global_inventory.reduceStock(item["product"], item["qty"])
-
-    def calculate_total(self):
-        for item in self.product_list:
-            self.total_price += getProductPrice(item["product"]) * item["qty"]
+    def add_item(self, product_obj, qty):
+        item = TransactionItem(product_obj, qty)
+        self.items.append(item)
 
     def final_transaction(self):
-        self.add_item()
-        self.calculate_total()
+        self.total_price = 0
+        for item in self.items:
+            self.total_price += item.calculate_subtotal()
+
+        for item in self.items:
+            global_inventory.reduceStock(item.product.id, item.qty)
+
         save_transaction(self.username, self.total_price)
 
 

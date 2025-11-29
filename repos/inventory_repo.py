@@ -1,6 +1,6 @@
 import sys
 sys.path.append("data/")
-from db_util import query, query_select
+from data.db_util import query, query_select
 
 def repo_getStock(id):
     result = query_select(f"SELECT * from products where id = {id}")
