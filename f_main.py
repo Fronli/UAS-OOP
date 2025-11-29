@@ -5,8 +5,9 @@ sys.path.append("util/")
 
 from models.electronic_product import ElectronicProduct
 from models.transaction import Transaction, getUserTransaction
-from repos.product_repo import getAllProduct, getProductInfo
-from util.exception_h import InsufficientStockErrorH
+from repos.product_repo import getAllProduct, getProductInfo, addProduct, changePrice
+from repos.inventory_repo import repo_addStock
+from util.exception_h import InsufficientStockErrorH, FailedAddingProduct, FailedChangingPrice, FailedAddingQuantity
 
 def checkInput(prompt):
     data_input = input(prompt)
@@ -81,6 +82,100 @@ def second_opt():
     pass
 
 def third_opt():
+    print("Masukkan Devleoper Account Name!")
+    dev_name = checkInput("Name input: ")
+    print()
+    print("Masukkan Devleoper Account Password!")
+    dev_pass = checkInput("Password input: ")
+    print()
+
+    if dev_name.lower() != "dev" or dev_pass.lower() != "dev":
+        print("Kredensial Akun Developer Salah!!!\n")
+        return None
+
+    while True:
+        print("---Welcome to Devloper Mode---")
+        print("Select what to do!")
+        print("1. Add New Product\n2. Change Product Price\n3. Add Product Quantity\n4. Back")
+        dev_select = int(checkInput("Input: "))
+
+
+        # Feature "Add New Produce"
+        if dev_select == 1:
+            pname = checkInput("Input Product Name: ")
+            pcategory = checkInput("Input Product Category: ") 
+            pbrand = checkInput("Input Product Brand: ") 
+            pprice = int(checkInput("Input Product Price: ")) 
+            pwarranty = int(checkInput("Input Product Warranty Months: ")) 
+
+            new_product = ElectronicProduct(
+                id=100,
+                name=pname,
+                category=pcategory,
+                brand=pbrand,
+                price=pprice,
+                warranty_months=pwarranty,
+            )
+
+            try:
+                addProduct(new_product)
+                print("Succesful adding new product")
+            except FailedAddingProduct as e:
+                print(f"\nGAGAL: {e}")
+            except Exception as e:
+                print(f"\nTerjadi kesalahan sistem: {e}")
+
+
+        # Feature "Change Product Price" 
+        elif dev_select == 2:
+            print("\n--- DAFTAR PRODUK ---")
+            all_product_data = getAllProduct() 
+            index = 1        
+
+            for p in all_product_data:
+                print(f"{index}. {p[1]}\nCategory: {p[2]}\nPrice: Rp.{p[4]}\nQuantity: {p[6]}\n")
+                index += 1
+
+            pid = int(checkInput("Input Product ID: ")) 
+            new_price = int(checkInput("Input New Price: "))
+            
+            try:
+                changePrice(pid, new_price)
+                print("Succesful changing price!")
+            except FailedChangingPrice as e:
+                print(f"\nGAGAL: {e}")
+            except Exception as e:
+                print(f"\nTerjadi kesalahan sistem: {e}")
+
+
+        # Feature "Add Product Quantity" 
+        elif dev_select == 3:
+            print("\n--- DAFTAR PRODUK ---")
+            all_product_data = getAllProduct() 
+            index = 1        
+
+            for p in all_product_data:
+                print(f"{index}. {p[1]}\nCategory: {p[2]}\nPrice: Rp.{p[4]}\nQuantity: {p[6]}\n")
+                index += 1
+            
+            pid = int(checkInput("Input Product ID: ")) 
+            add_quantity = int(checkInput("Input How Much Quantity to Add: "))
+
+            try:
+                repo_addStock(pid, add_quantity)
+                print("Succesful changing price!")
+            except FailedChangingPrice as e:
+                print(f"\nGAGAL: {e}")
+            except Exception as e:
+                print(f"\nTerjadi kesalahan sistem: {e}")
+
+            
+        # Feature "Back"
+        else:
+            return None
+
+
+def fourth_opt():
     print("Terima kasih telah berbelanja!")
     print("GBU!")
     sys.exit(0)
