@@ -94,7 +94,7 @@ def third_opt():
         return None
 
     while True:
-        print("---Welcome to Devloper Mode---")
+        print("---Welcome to Developer Mode---")
         print("Select what to do!")
         print("1. Add New Product\n2. Change Product Price\n3. Add Product Quantity\n4. Back")
         dev_select = int(checkInput("Input: "))

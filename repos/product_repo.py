@@ -12,7 +12,7 @@ def getAllProduct():
     return db_list
 
 def addProduct(p):
-    query(f"INSERT INTO products (name, category, brand, price, warranty_months, quantity) VALUES ({p.name}, {p.category}, {p.brand}, {p.price}, {p.warranty_months}, 0)")
+    query(f"INSERT INTO products (name, category, brand, price, warranty_months, quantity) VALUES ('{p.name}', '{p.category}', '{p.brand}', {p.price}, {p.warranty_months}, 0)")
 
 def changePrice(id, new_price):
     query(f"UPDATE products SET price = {new_price} WHERE id = {id}")
