@@ -4,19 +4,23 @@ sys.path.append('util/')
 from repos.inventory_repo import repo_getStock, repo_reduceStock
 from util.exception_h import InsufficientStockErrorH
 
+# buat class inventory
 class Inventory:
+    # buat method untuk cek stok
     def checkStock(self, id, qty):
         db_list = repo_getStock(id)
         if not db_list:
             return False
         current_qty = db_list[0][6] 
         return current_qty >= qty
-        
+    
+    # buat method untuk mengurangi stok
     def reduceStock(self, id, qty):
         if self.checkStock(id, qty):
             repo_reduceStock(id, qty)        
         else:
             raise InsufficientStockErrorH(f"Stok untuk produk ID {id} tidak cukp!")
 
-
+# buat Global Instance
+# buat satu objek Inventory yang bisa diakses dari seluruh aplikasi
 global_inventory = Inventory()
