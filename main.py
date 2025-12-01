@@ -2,7 +2,6 @@ import sys
 sys.path.append("models/")
 from f_main import first_opt, second_opt, third_opt, fourth_opt, checkInput
 
-# testing commit
 
 #===============================================================================
 
@@ -15,14 +14,14 @@ if __name__ == "__main__":
         user_input = int(checkInput("Masukkan pilihan anda: "))
         print()
 
-        # User pilih beli barang (1)
+        # user pilih beli barang (1)
         if user_input == 1:
             first_opt()
-        # User pilih check transaksi (2)
+        # user pilih check transaksi (2)
         elif user_input == 2:
             second_opt()
         elif user_input == 3:
             third_opt()
-        #  User pilih EXIT (4)
+        #  user pilih EXIT (4)
         else:
             fourth_opt()

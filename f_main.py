@@ -1,4 +1,5 @@
 import sys
+# tambah path supaya bisa import models, repos, util
 sys.path.append("models/")
 sys.path.append("repos/")
 sys.path.append("util/")
@@ -9,6 +10,7 @@ from repos.product_repo import getAllProduct, getProductInfo, addProduct, change
 from repos.inventory_repo import repo_addStock
 from util.exception_h import InsufficientStockErrorH, FailedAddingProduct, FailedChangingPrice, FailedAddingQuantity
 
+# fungsi untuk memastikan input user tidak kosong
 def checkInput(prompt):
     data_input = input(prompt)
     while not data_input:
@@ -16,31 +18,39 @@ def checkInput(prompt):
         data_input = input(prompt)
     return data_input
 
+
+# ==============================
+#  MENU 1 — PEMBELIAN PRODUK
+# ==============================
 def first_opt():
     print("Mohon masukkan nama user!")
     username = checkInput("Masukkan nama: ")
 
-    # Init Transaksi disini!
+    # buat objek transaksi untuk user ini
     current_transaction = Transaction(username)
 
+    # loop untuk memilih dan memasukkan banyak item ke keranjang
     while True:
         print("\n--- DAFTAR PRODUK ---")
         all_product_data = getAllProduct() 
         index = 1        
 
+        # tampilkan list produk
         for p in all_product_data:
             print(f"{index}. {p[1]}\nCategory: {p[2]}\nPrice: Rp.{p[4]}\nQuantity: {p[6]}\n")
             index += 1
 
             
         try:
+            # input id produk dan jumlah yang dibeli
             inp_id = int(checkInput("Pilih produk: "))
             inp_qty = int(checkInput("Berapa banyak: "))
 
+            # ambil data produk dari DB
             prod_info = getProductInfo(inp_id)
-            # print(f"dari print prod_info: {prod_info}")
 
             if prod_info:
+                # buat object produk menggunakan data dari DB
                 product_obj = ElectronicProduct(
                     id=prod_info[0],
                     name=prod_info[1],
@@ -50,7 +60,7 @@ def first_opt():
                     warranty_months=prod_info[5] # Default atau ambil dari DB jika ada
                 )
 
-                # Masukkan Object ke Transaksi
+                # masukkan produk + qty ke transaksi
                 current_transaction.add_item(product_obj, inp_qty)
                 print("Berhasil ditambahkan ke keranjang.")
             else:
@@ -59,6 +69,7 @@ def first_opt():
         except ValueError:
             print("Input harus berupa angka.")
 
+        # tanya apakah ingin beli lagi
         inp_buy_again = checkInput("Beli lagi? (yes/no): ")
         if inp_buy_again.lower() == "no":
             break
@@ -71,17 +82,28 @@ def first_opt():
     except Exception as e:
         print(f"\nTerjadi kesalahan sistem: {e}")
 
+
+# ==============================
+#  MENU 2 — HISTORY TRANSAKSI
+# ==============================
 def second_opt():
     print("Mohon masukkan nama user!")
     username = checkInput("Masukkan nama:")
     
+    # ambil semua transaksi milik user
     db_list = getUserTransaction(username)
+    # tampilkan hasilnya
     for transaction in db_list:
         print(f"\nTransaction ID: {transaction[0]}\nTransaction Date: {transaction[1]}\nTotal Amount: {transaction[3]}\n")
 
     pass
 
+
+# ==============================
+#  MENU 3 — DEVELOPER MODE
+# ==============================
 def third_opt():
+    # login developer
     print("Masukkan Devleoper Account Name!")
     dev_name = checkInput("Name input: ")
     print()
@@ -93,6 +115,7 @@ def third_opt():
         print("Kredensial Akun Developer Salah!!!\n")
         return None
 
+    # dev mode loop
     while True:
         print("---Welcome to Developer Mode---")
         print("Select what to do!")
@@ -100,14 +123,14 @@ def third_opt():
         dev_select = int(checkInput("Input: "))
 
 
-        # Feature "Add New Produce"
+        # 1. Fitur tambah produk baru
         if dev_select == 1:
             pname = checkInput("Input Product Name: ")
             pcategory = checkInput("Input Product Category: ") 
             pbrand = checkInput("Input Product Brand: ") 
             pprice = int(checkInput("Input Product Price: ")) 
             pwarranty = int(checkInput("Input Product Warranty Months: ")) 
-
+            # buat object produk baru
             new_product = ElectronicProduct(
                 id=100,
                 name=pname,
@@ -116,7 +139,7 @@ def third_opt():
                 price=pprice,
                 warranty_months=pwarranty,
             )
-
+            # simpan ke database
             try:
                 addProduct(new_product)
                 print("Succesful adding new product")
@@ -126,7 +149,7 @@ def third_opt():
                 print(f"\nTerjadi kesalahan sistem: {e}")
 
 
-        # Feature "Change Product Price" 
+        # 2. Fitur ubah harga produk
         elif dev_select == 2:
             print("\n--- DAFTAR PRODUK ---")
             all_product_data = getAllProduct() 
@@ -148,7 +171,7 @@ def third_opt():
                 print(f"\nTerjadi kesalahan sistem: {e}")
 
 
-        # Feature "Add Product Quantity" 
+        # 3. Fitur tambah stok produk
         elif dev_select == 3:
             print("\n--- DAFTAR PRODUK ---")
             all_product_data = getAllProduct() 
@@ -170,11 +193,14 @@ def third_opt():
                 print(f"\nTerjadi kesalahan sistem: {e}")
 
             
-        # Feature "Back"
+        # 4. kembali ke menu utama
         else:
             return None
 
 
+# ==============================
+#  MENU 4 — EXIT APLIKASI
+# ==============================
 def fourth_opt():
     print("Terima kasih telah berbelanja!")
     print("GBU!")
